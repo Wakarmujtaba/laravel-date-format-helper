@@ -1,0 +1,31 @@
+{
+    "name": "wakar/laravel-date-format-helper",
+    "description": "Simple and flexible date formatting helper for Laravel",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Wakar Mujtaba",
+            "email": "wakarmujtaba2@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "nesbot/carbon": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Wakar\\DateFormatHelper\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Wakar\\DateFormatHelper\\DateFormatServiceProvider"
+            ]
+        }
+    }
+}
