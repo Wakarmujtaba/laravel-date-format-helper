@@ -6,7 +6,7 @@ use Carbon\Carbon;
 
 class DateFormatHelper
 {
-    public static function format($date, $format = 'd-m-Y', $returnOriginalOnFailure = true)
+    public static function format_date($date, $format = 'd-m-Y', $returnOriginalOnFailure = true)
     {
         $date = trim((string) $date);
 
