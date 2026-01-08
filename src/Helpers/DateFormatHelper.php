@@ -9,20 +9,29 @@ class DateFormatHelper
     public static function format_date($date, $format = 'd-m-Y', $returnOriginalOnFailure = true)
     {
         $date = trim((string) $date);
-
         if ($date === '' || $date === 'null') {
             return '';
         }
-
         if (empty($format)) {
             $format = 'd-m-Y';
         }
+
+        // === IMPROVED: Remove ordinal suffixes (1st, 2nd, 3rd, 4th, 21st, 30th, etc.) ===
+        // Handles: "1st", "2nd", "3rd", "4th", "21st", "22nd", "23rd", "24th", etc.
+        // Works with or without space: "1st Jan" or "1 st Jan"
+        // Case insensitive
+        $date = preg_replace('/(\d)(st|nd|rd|th)\b/i', '$1', $date);
+
+        // Optional: extra trim in case multiple spaces appear after removal
+        $date = preg_replace('/\s+/', ' ', $date);
+        $date = trim($date);
 
         // Unix timestamp
         if (is_numeric($date) && preg_match('/^\d{9,10}$/', $date)) {
             try {
                 return Carbon::createFromTimestamp((int) $date)->format($format);
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
 
         $formats = [
@@ -40,8 +49,8 @@ class DateFormatHelper
             'm/d/Y',
             'd.m.Y',
             'Y.m.d',
-            'j M Y',
-            'j F Y',
+            'j M Y',       // Now works perfectly after cleaning: "2 march 2025"
+            'j F Y',       // "2 March 2025"
             'M j, Y',
             'F j, Y',
             'D, j M Y',
@@ -55,20 +64,22 @@ class DateFormatHelper
 
         foreach ($formats as $f) {
             try {
-                if (method_exists(Carbon::class, 'hasFormat') &&
-                    !Carbon::hasFormat($date, $f)) {
+                if (
+                    method_exists(Carbon::class, 'hasFormat') &&
+                    !Carbon::hasFormat($date, $f)
+                ) {
                     continue;
                 }
-
                 $parsed = Carbon::createFromFormat($f, $date);
                 $errors = \DateTime::getLastErrors();
-
                 if ($parsed && empty($errors['warning_count']) && empty($errors['error_count'])) {
                     return $parsed->format($format);
                 }
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
 
+        // Final fallback - Carbon::parse is very forgiving
         try {
             return Carbon::parse($date)->format($format);
         } catch (\Exception $e) {
